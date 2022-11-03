@@ -17,6 +17,7 @@ import {
   Query,
   CacheInterceptor,
   CacheKey,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { request } from 'http';
@@ -33,11 +34,13 @@ import { Public } from 'src/auth/decorators/public.decorator';
 import { FilterQuery, PaginateResult } from 'mongoose';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { ApiOkResponseGeneral } from 'src/utils/pagination/apiOkResponseGeneral';
-import { Student } from './models/student.model';
-import { Teacher } from './models/teacher.model';
+var ObjectId = require('mongodb').ObjectId;
+
 import { FilterQueryOptionsUser } from './dto/filterQueryOptions.dto';
 import { UserRepository } from './users.repository';
 import { Constants } from 'src/utils/constants';
+import { CreateEmpolyeeDto } from './dto/createEmpolyee.dto';
+import { UpdateEmpolyeeDto } from './dto/updateEmp.dto';
 
 @ApiBearerAuth()
 @ApiTags('USERS')
@@ -47,7 +50,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly UserRepository: UserRepository,
     @Inject(REQUEST) private readonly req: Record<string, unknown>,
-  ) {}
+  ) { }
 
   // @Roles(UserRole.STUDENT)
   // @CacheKey(Constants.GET_POSTS_CACHE_KEY)
@@ -104,4 +107,58 @@ export class UsersController {
       _id: id,
     } as FilterQuery<UserDocument>);
   }
+
+  @Roles(UserRole.ADMIN)
+  @Post('add-empolyee')
+  async addStudent(
+    @Body() registerationData: CreateEmpolyeeDto,
+    /*  @UploadedFiles()
+    files, */
+  ) {
+    let user = await this.UserRepository.findOne({
+      $or: [
+        // { email: registerationData.email },
+        { phone: registerationData.phone },
+      ],
+    });
+    if (user) throw new BadRequestException('phone and email should be unique');
+
+    let code;
+    console.log(code)
+    do {
+      code = Math.floor(Math.random() * 90000) + 10000;
+    } while (await await this.UserRepository.findOne({ code: code }));
+    registerationData.code = code
+
+    let newUser = await this.UserRepository.createDoc({
+      ...registerationData,
+      role: UserRole.EMPOLYEE,
+      enabled: true,
+      pushTokens: []
+    });
+    return newUser;
+  }
+
+
+  @Roles(UserRole.ADMIN)
+  @Patch('update-employee/:id/')
+  async updateMember(
+    @Body() updateUserData: UpdateEmpolyeeDto,
+    @Param() { id }: ParamsWithId,
+  ): Promise<UserDocument>
+  {
+    return await this.UserRepository.updateUser(
+      { _id: ObjectId(id)} as any,
+      updateUserData,
+    );
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Delete(':id')
+  async remove(@Param() { id }: ParamsWithId)
+  {
+    return await this.usersService.remove(id);
+  }
+
+
 }

@@ -16,8 +16,7 @@ export type UserDocument = User & Document;
 
 export enum UserRole {
   ADMIN = 'admin',
-  STUDENT = 'student',
-  TEACHER = 'teacher',
+  EMPOLYEE = 'empolyee',
 }
 
 export enum DeviceType {
@@ -50,20 +49,19 @@ export interface PushToken {
 export class User {
   id?: string;
   @Prop({
-    index: true,
+    
     unique: true,
     sparse: true,
     match: Constants.EMAIL_REGX,
   })
-  email: string;
+  email?: string;
 
   @Prop({
-    index: true,
     unique: true,
     sparse: true,
     match: Constants.PHONE_REGX,
   })
-  phone: string;
+  phone?: string;
 
   @Prop({
     get: (username: string) => {
@@ -78,19 +76,32 @@ export class User {
   username: string;
 
   @Prop({ type: String })
-  password: string;
+  password?: string;
 
   @Prop({ default: false, type: Boolean })
   enabled: boolean;
 
+  
+  @Prop({ type: Number })
+  sallary?: number;
+
+  
+  @Prop({ type: Number })
+  ResidencyNumber: number;
+
+
+  @Prop({ type: Number })
+  code: number;
+
+
+
   @Prop({ type: String })
-  photo: string;
+  qualification: string;
 
-  @Prop({ index: true, unique: true, sparse: true, type: String })
-  facebookId: string;
+  @Prop({ type: String })
+  notes: string;
 
-  @Prop({ index: true, unique: true, sparse: true, type: String })
-  googleId: string;
+
 
   @Prop({ required: true, type: String, enum: Object.values(UserRole) })
   role: UserRole;

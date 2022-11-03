@@ -11,13 +11,12 @@ import { RegisterDto } from './dto/register.dto';
 import * as jwt from 'jsonwebtoken';
 import TokenPayload from './interfaces/tokenPayload.interface';
 import { LoginGoogleDto } from './dto/login-google.dto';
-import { User, UserDocument } from 'src/users/models/_user.model';
+import { User, UserDocument, UserRole } from 'src/users/models/_user.model';
 import { LoginFacebookDto } from './dto/login-facebook.dto';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { UserNotFoundException } from 'src/users/exceptions/userNotFound.exception';
 import { JwtService } from '@nestjs/jwt';
-import { StudentDocument } from 'src/users/models/student.model';
 import { CreateQuery, FilterQuery } from 'mongoose';
 import { UserRepository } from 'src/users/users.repository';
 
@@ -27,20 +26,18 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
-  async register(registerationData: RegisterDto): Promise<StudentDocument> {
+  async register(registerationData: RegisterDto): Promise<UserDocument> {
     let user = await this.userRepository.findOne({
-      phone: registerationData.phone,
+      email: registerationData.email,
     } as FilterQuery<UserDocument>);
     if (user) throw new BadRequestException('phone should be unique');
-    // user = await this.userRepository.create({
-    //   ...registerationData,
-    //   role: 'student',
-    // } as CreateQuery<UserDocument>);
+
     user = await this.userRepository.createDoc({
       ...registerationData,
-      role: 'student',
+      role: UserRole.ADMIN,
+      enabled: true
     } as User);
     return user;
   }
@@ -49,9 +46,9 @@ export class AuthService {
     user: UserDocument;
     token: string;
   }> {
-    const { phone } = loginDto;
+    const { email } = loginDto;
     let user = await this.userRepository.findOne({
-      phone,
+      email: loginDto.email,
     } as FilterQuery<UserDocument>);
     if (!user) throw new UserNotFoundException();
     if (!(await (user as any).isValidPassword(loginDto.password)))
@@ -67,32 +64,6 @@ export class AuthService {
     return { user, token };
   }
 
-  async loginGoogle(user: UserDocument): Promise<UserDocument> {
-    return user;
-  }
-
-  async loginFacebook({
-    accessToken,
-  }: LoginFacebookDto): Promise<UserDocument> {
-    const { data } = await axios(
-      `${this.configService.get<string>(
-        'facebookUrl',
-      )}&access_token=${accessToken}`,
-    );
-    const { id, name, email } = data;
-    let user = await this.userRepository.findOne({
-      facebookId: id,
-    } as FilterQuery<UserDocument>);
-    if (!user) {
-      user = await this.userRepository.create({
-        username: name,
-        email,
-        facebookId: id,
-        role: 'student',
-      } as CreateQuery<UserDocument>);
-    }
-    return user;
-  }
 
   async verifyUserByTokenFromSocket(
     token: string,

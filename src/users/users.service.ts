@@ -23,6 +23,7 @@ import { User, UserDocument, UserRole, UserSchema } from './models/_user.model';
 import * as _ from 'lodash';
 import { UserRepository } from './users.repository';
 import { cacheOperationsService } from 'src/cache/cache-operations.service';
+var ObjectId = require('mongodb').ObjectId;
 
 function randomInRange(from: number, to: number) {
   var r = Math.random();
@@ -78,4 +79,10 @@ export class UsersService {
       { password: newPassword } as UpdateQuery<UserDocument>,
     );
   }
+
+  async remove(id: string) {
+    return await this.userRepository.deleteOne({ _id:ObjectId(id)})
+
+  }
+
 }

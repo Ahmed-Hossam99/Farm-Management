@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { BaseAbstractRepository } from 'src/utils/base.abstract.repository';
+import { UpdateEmpolyeeDto } from './dto/updateEmp.dto';
 import { User, UserDocument } from './models/_user.model';
 
 @Injectable()
@@ -68,5 +69,32 @@ export class UserRepository extends BaseAbstractRepository<User> {
       { $unwind: '$arrayOfUsersIds' },
     ]);
     return chunk[0];
+  }
+
+  async updateUser(id: string, updateUserData: UpdateEmpolyeeDto)
+  {
+    let existUser = await this.userModel.findById(id)
+    if (!existUser) throw new BadRequestException('user not found',);
+
+    if (updateUserData.phone)
+    {
+      let user = await this.userModel.findOne({
+        $or: [
+          { 'phone': updateUserData.phone },
+        ]
+      });
+      console.log(user)
+      if (user)
+      {
+        throw new BadRequestException(
+          'phone should be unique',
+        );
+      }
+    }
+
+    await existUser.set(updateUserData).save()
+
+    return existUser
+    // let updateUser = await this.userModel.updateOne()
   }
 }

@@ -7,8 +7,7 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserRole, UserSchema } from './models/_user.model';
-import { Student, StudentSchema } from './models/student.model';
-import { Teacher, TeacherSchema } from './models/teacher.model';
+
 import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { MulterModule } from '@nestjs/platform-express';
@@ -23,10 +22,6 @@ import { cacheOperationsModule } from 'src/cache/cache.module';
       {
         name: User.name,
         schema: UserSchema,
-        discriminators: [
-          { name: UserRole.STUDENT, schema: StudentSchema },
-          { name: UserRole.TEACHER, schema: TeacherSchema },
-        ],
       },
     ]),
     MulterModule.registerAsync({

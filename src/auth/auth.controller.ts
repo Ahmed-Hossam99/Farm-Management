@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Public } from './decorators/public.decorator';
-import { PhoneConfirmationService } from 'src/phone-confirmation/phone-confirmation.service';
+// import { PhoneConfirmationService } from 'src/phone-confirmation/phone-confirmation.service';
 import { LoginGoogleDto } from './dto/login-google.dto';
 import { LoginFacebookDto } from './dto/login-facebook.dto';
 import { GoogleOauthGuard } from './guards/googleToken.guard';
@@ -21,7 +21,6 @@ import { CheckCodeToResetDto } from './dto/check-code-to-reset.dto';
 import { UsersService } from 'src/users/users.service';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { StudentDocument } from 'src/users/models/student.model';
 import { FilterQuery } from 'mongoose';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UserRepository } from 'src/users/users.repository';
@@ -32,17 +31,14 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userRepository: UserRepository,
-    private readonly phoneConfirmationService: PhoneConfirmationService,
+    // private readonly phoneConfirmationService: PhoneConfirmationService,
     @Inject(REQUEST) private readonly req: Record<string, unknown>,
   ) {}
 
   @Public()
   @Post('/signup')
-  async register(@Body() RegisterDto: RegisterDto): Promise<StudentDocument> {
+  async register(@Body() RegisterDto: RegisterDto): Promise<UserDocument> {
     let user = await this.authService.register(RegisterDto);
-    await this.phoneConfirmationService.sendSMS({
-      phone: RegisterDto.phone,
-    });
     return user;
   }
 
@@ -56,45 +52,29 @@ export class AuthController {
     return await this.authService.login(LoginDto);
   }
 
-  @Public()
-  @UseGuards(GoogleOauthGuard)
-  @Post('/login-googel')
-  async loginGoogle(
-    @Body() _loginGoogleData: LoginGoogleDto,
-  ): Promise<UserDocument> {
-    return await this.authService.loginGoogle(this.req.me as UserDocument);
-  }
 
-  @Public()
-  @Post('/login-facebook')
-  async loginFacebook(
-    @Body() { accessToken }: LoginFacebookDto,
-  ): Promise<UserDocument> {
-    return await this.authService.loginFacebook({ accessToken });
-  }
+  // @Public()
+  // @HttpCode(HttpStatus.OK)
+  // @Post('/check-code-to-reset')
+  // async checkCodeToReset(
+  //   @Body() { phone, code }: CheckCodeToResetDto,
+  // ): Promise<void> {
+  //   return await this.phoneConfirmationService.verificationCode({
+  //     phone,
+  //     code,
+  //   });
+  // }
 
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Post('/check-code-to-reset')
-  async checkCodeToReset(
-    @Body() { phone, code }: CheckCodeToResetDto,
-  ): Promise<void> {
-    return await this.phoneConfirmationService.verificationCode({
-      phone,
-      code,
-    });
-  }
-
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Post('reset-password')
-  async resetPassword(
-    @Body() { phone, code, password }: ResetPasswordDto,
-  ): Promise<UserDocument> {
-    await this.phoneConfirmationService.verificationCode({ phone, code });
-    return await this.userRepository.updateOne(
-      { phone } as FilterQuery<UserDocument>,
-      { password } as UpdateUserDto,
-    );
-  }
+  // @Public()
+  // @HttpCode(HttpStatus.OK)
+  // @Post('reset-password')
+  // async resetPassword(
+  //   @Body() { phone, code, password }: ResetPasswordDto,
+  // ): Promise<UserDocument> {
+  //   await this.phoneConfirmationService.verificationCode({ phone, code });
+  //   return await this.userRepository.updateOne(
+  //     { phone } as FilterQuery<UserDocument>,
+  //     { password } as UpdateUserDto,
+  //   );
+  // }
 }
