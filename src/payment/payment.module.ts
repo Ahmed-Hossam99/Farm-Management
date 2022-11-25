@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Payment, PaymentSchema } from './entities/payment.entity';
 import { DepartmentModule } from 'src/department/department.module';
 import { PaymentRepository } from './payment.repository';
+import { ProductModule } from 'src/product/product.module';
 
 @Module({
   imports: [
@@ -14,10 +15,11 @@ import { PaymentRepository } from './payment.repository';
         schema: PaymentSchema,
       },
     ]),
-    DepartmentModule
+    DepartmentModule,
+    ProductModule
   ],
   controllers: [PaymentController],
-  providers: [PaymentService,PaymentRepository],
-  exports: [PaymentService,PaymentRepository],
+  providers: [PaymentService, PaymentRepository],
+  exports: [PaymentService, PaymentRepository],
 })
-export class PaymentModule {}
+export class PaymentModule { }

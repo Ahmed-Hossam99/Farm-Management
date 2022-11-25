@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { Types, Schema as MongooseSchema } from 'mongoose';
 import { Department } from 'src/department/entities/department.entity';
+import { Product } from 'src/product/entities/product.entity';
 import { User } from 'src/users/models/_user.model';
 
 
@@ -27,9 +28,17 @@ export class Payment {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: Department.name,
-    required: true,
+    // required: true,
   })
   department: string;
+
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: Product.name,
+    // required: true,
+  })
+  product: string;
 
   @Prop({ type: Number, required: true })
   paid: number;

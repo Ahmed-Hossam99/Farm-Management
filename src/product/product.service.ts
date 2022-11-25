@@ -31,9 +31,9 @@ export class ProductService {
     queryFiltersAndOptions: FilterQueryProduct,
   ): Promise<PaginateResult<ProductDocument> | ProductDocument[]> {
     const universities =
-      await this.productRepository.findAllWithPaginationOption(
+      await this.productRepository.findAllWithPaginationCustome(
         queryFiltersAndOptions,
-        ['name', 'department'], { populate: { path: 'department', select: ['name'] } }
+        // ['name', 'department'], { populate: { path: 'department', select: ['name'] } }
       );
     return universities;
   }
@@ -41,12 +41,13 @@ export class ProductService {
   async findOne(id: string) {
     console.log(id)
     let doc = await this.productRepository.findOne({ _id: id })
-    if (!doc) throw new BadRequestException('District not found!!')
+    // if (!doc) throw new BadRequestException('District not found!!')
     return doc
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    return await this.productRepository.updateOne({ _id:ObjectId(id)  }, updateProductDto);
+    delete updateProductDto.department
+    return await this.productRepository.updateOne({ _id: ObjectId(id) }, updateProductDto);
   }
 
   async remove(id: string) {

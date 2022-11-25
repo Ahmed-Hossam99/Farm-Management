@@ -10,74 +10,107 @@ import { AuthUser } from 'src/auth/decorators/me.decorator';
 import ParamsWithId from 'src/utils/paramsWithId.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DepartmentService } from 'src/department/department.service';
+import { ProductService } from 'src/product/product.service';
 var ObjectId = require('mongodb').ObjectId;
 @ApiBearerAuth()
 @ApiTags('payments')
 @Controller('payment')
 export class PaymentController {
-  constructor(
-    private readonly paymentService: PaymentService,
-    private readonly departmentService: DepartmentService,
+    constructor(
+        private readonly paymentService: PaymentService,
+        private readonly departmentService: DepartmentService,
+        private readonly productService: ProductService,
 
-  ) { }
+    ) { }
 
 
-  @Roles(UserRole.ADMIN)
-  @Post('/expensis/:id')
-  async createExpensis(
-    @Param('id') id: string,
-    @Body() createPaymentDto: CreatePaymentDto
-  ) {
+    @Roles(UserRole.ADMIN)
+    @Post('/expensis/:id')
+    async createExpensis(
+        @Param('id') id: string,
+        @Body() createPaymentDto: CreatePaymentDto
+    ) {
 
-    if (!createPaymentDto.name) throw new BadRequestException('name is required!!')
-    delete createPaymentDto.quantity
-    let doc = await this.departmentService.findOne(id)
-    createPaymentDto.department = ObjectId(id)
-    createPaymentDto.paymentType = PaymentType.EXPENSIS;
-    return this.paymentService.createExpensis(createPaymentDto);
-  }
+        if (!createPaymentDto.name)
+            throw new BadRequestException('name is required!!')
+        delete createPaymentDto.quantity
+        let department = await this.departmentService.findOne(id)
+        if (department) createPaymentDto.department = ObjectId(id)
+        let product = await this.productService.findOne(id)
+        if (product) createPaymentDto.product = ObjectId(id)
 
-  @Roles(UserRole.ADMIN)
-  @Post('/revenue/:id')
-  async createRevenue(
-    @Param('id') id: string,
-    @Body() createPaymentDto: CreatePaymentDto) {
+        if (!department && !product)
+            throw new BadRequestException('id not found !!')
 
-    if (!createPaymentDto.quantity) throw new BadRequestException('quantity is required!!')
-    let doc = await this.departmentService.findOne(id)
-    createPaymentDto.department = ObjectId(id)
-    delete createPaymentDto.name
-    createPaymentDto.paymentType = PaymentType.REVENUSE;
-    return this.paymentService.create(createPaymentDto);
-  }
+        createPaymentDto.paymentType = PaymentType.EXPENSIS;
+        return this.paymentService.createExpensis(createPaymentDto);
+    }
 
-  @Get()
-  findAll(
-    @Query() FilterQueryOptionsTasks: FilterQueryOptionsPayment,
-    @AuthUser() me: UserDocument,
-  ) {
-    return this.paymentService.findAll(FilterQueryOptionsTasks, me);
-  }
+    @Roles(UserRole.ADMIN)
+    @Post('/revenue/:id')
+    async createRevenue(
+        @Param('id') id: string,
+        @Body() createPaymentDto: CreatePaymentDto) {
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.paymentService.update(+id, updatePaymentDto);
-  }
+        if (!createPaymentDto.quantity)
+            throw new BadRequestException('quantity is required!!')
 
-  @Get(':department/all-payments')
-  MonyTest(@Param('department') department: string) {
-    return this.paymentService.totalMony(department);
-  }
+        let doc = await this.productService.findOne(id)
+        if (!doc)
+            throw new BadRequestException('product is not found!!')
+        createPaymentDto.product = ObjectId(id)
+        delete createPaymentDto.name
+        createPaymentDto.paymentType = PaymentType.REVENUSE;
+        return this.paymentService.create(createPaymentDto);
+    }
 
-  @Get('/all/profits')
-  MonyTest2() {
-    return this.paymentService.totalMonyApp();
-  }
+    @Roles(UserRole.ADMIN)
+    @Post('/general/fram')
+    async createPaymentFarm(@Body() createPaymentDto: CreatePaymentDto) {
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentService.remove(+id);
-  }
+        if (!createPaymentDto.quantity)
+            throw new BadRequestException('quantity is required!!')
+        delete createPaymentDto.name
+        createPaymentDto.paymentType = PaymentType.EXPENSIS;
+        console.log('quantity is required!!22')
+        return this.paymentService.create(createPaymentDto);
+    }
+
+
+    @Get()
+    findAll(
+        @Query() FilterQueryOptionsTasks: FilterQueryOptionsPayment,
+        @AuthUser() me: UserDocument,
+    ) {
+        return this.paymentService.findAll(FilterQueryOptionsTasks, me);
+    }
+
+    @Get(':product/all/payments')
+    MonyTestProduct(@Param('product') product: string) {
+        return this.paymentService.totalMonyProduct(product);
+    }
+
+
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
+        return this.paymentService.update(+id, updatePaymentDto);
+    }
+
+    @Get(':department/all-payments')
+    MonyTest(@Param('department') department: string) {
+        return this.paymentService.totalMony(department);
+    }
+
+
+    @Get('/all/profits')
+    MonyTest2() {
+        return this.paymentService.totalMonyApp();
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id: string) {
+        return this.paymentService.remove(+id);
+    }
 }
 
 

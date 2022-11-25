@@ -38,17 +38,20 @@ export class Product {
 
     @Prop({ type: Date, required: true })
     startDate?: Date;
-  
+
     @Prop({ type: Date, required: true })
     endDate?: Date;
-  
-   
+
+
     @Prop({
         type: MongooseSchema.Types.ObjectId,
         ref: Department.name,
         required: true,
     })
     department: string | DepartmentDocument
+
+    @Prop({ type: Boolean, default: true })
+    enabled: boolean;
 
 }
 

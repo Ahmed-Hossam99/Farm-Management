@@ -32,14 +32,14 @@ function randomInRange(from: number, to: number) {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(private readonly userRepository: UserRepository) { }
 
   async findAll(
     queryFiltersAndOptions: FilterQueryOptionsUser,
   ): Promise<PaginateResult<UserDocument> | UserDocument[]> {
     const users = await this.userRepository.findAllWithPaginationOption(
       queryFiltersAndOptions,
-      ['username'],
+      ['username', 'role'],
     );
     return users;
   }
@@ -81,7 +81,7 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    return await this.userRepository.deleteOne({ _id:ObjectId(id)})
+    return await this.userRepository.deleteOne({ _id: ObjectId(id) })
 
   }
 

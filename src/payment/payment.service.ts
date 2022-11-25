@@ -21,6 +21,7 @@ export class PaymentService {
   ) { }
   async create(createPaymentDto: CreatePaymentDto) {
 
+    console.log('inside serves farm')
     return await this.paymentRepository.create(createPaymentDto as any);
   }
 
@@ -61,6 +62,24 @@ export class PaymentService {
 
     };
   }
+
+  async totalMonyProduct(department: string) {
+    console.log('here');
+
+    let paidPriceEx = await this.paymentRepository.allExpensisMonyProduct(department);
+    let paidPriceRev = await this.paymentRepository.allRevenueMonyProduct(department);
+    console.log('paidPriceEx')
+    console.log(paidPriceEx)
+    console.log('paidPriceRev')
+    console.log(paidPriceRev)
+
+    return {
+      totalExpensis: paidPriceEx,
+      totalRevenue: paidPriceRev,
+
+    };
+  }
+
 
   async totalMonyApp() {
     console.log('here');

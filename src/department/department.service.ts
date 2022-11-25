@@ -14,6 +14,7 @@ export class DepartmentService {
   constructor(private readonly departmentRepository: DepartmentRepository) { }
 
   async create(createDepartmentDto: CreateDepartmentDto) {
+    createDepartmentDto.enabled = true
     return await this.departmentRepository.create(createDepartmentDto as any)
   }
 
@@ -24,15 +25,15 @@ export class DepartmentService {
     const universities =
       await this.departmentRepository.findAllWithPaginationOption(
         queryFiltersAndOptions,
-        ['name'],
+        ['name', 'enabled'],
       );
     return universities;
   }
 
-  async findOne(id: string) {    
+  async findOne(id: string) {
     console.log(id)
     let doc = await this.departmentRepository.findOne({ _id: ObjectId(id) })
-    if (!doc) throw new BadRequestException('Department not found!!')
+    // if (!doc) throw new BadRequestException('Department not found!!')
     return doc
   }
 

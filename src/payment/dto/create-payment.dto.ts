@@ -20,6 +20,11 @@ export class CreatePaymentDto {
   @IsOptional()
   department: string;
 
+  @IsMongoId()
+  @ApiHideProperty()
+  @IsOptional()
+  product: string;
+
   @IsNumber()
   paid: number;
 

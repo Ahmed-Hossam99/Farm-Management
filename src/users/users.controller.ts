@@ -109,6 +109,7 @@ export class UsersController {
   }
 
   @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
   @Post('add-empolyee')
   async addStudent(
     @Body() registerationData: CreateEmpolyeeDto,
@@ -123,12 +124,12 @@ export class UsersController {
     });
     if (user) throw new BadRequestException('phone and email should be unique');
 
-    let code;
-    console.log(code)
-    do {
-      code = Math.floor(Math.random() * 90000) + 10000;
-    } while (await await this.UserRepository.findOne({ code: code }));
-    registerationData.code = code
+    // let code;
+    // console.log(code)
+    // do {
+    //   code = Math.floor(Math.random() * 90000) + 10000;
+    // } while (await await this.UserRepository.findOne({ code: code }));
+    // registerationData.code = code
 
     let newUser = await this.UserRepository.createDoc({
       ...registerationData,
@@ -145,19 +146,18 @@ export class UsersController {
   async updateMember(
     @Body() updateUserData: UpdateEmpolyeeDto,
     @Param() { id }: ParamsWithId,
-  ): Promise<UserDocument>
-  {
+  ): Promise<UserDocument> {
     return await this.UserRepository.updateUser(
-      { _id: ObjectId(id)} as any,
+      { _id: ObjectId(id) } as any,
       updateUserData,
     );
   }
 
   @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
   @Delete(':id')
-  async remove(@Param() { id }: ParamsWithId)
-  {
-    return await this.usersService.remove(id);
+  async remove(@Param() { id }: ParamsWithId) {
+    return await this.usersService.remove(ObjectId(id));
   }
 
 

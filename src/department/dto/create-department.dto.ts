@@ -1,5 +1,6 @@
 
-import { IsNotEmpty, IsString } from "class-validator";
+import { ApiHideProperty } from "@nestjs/swagger";
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateDepartmentDto {
     @IsString()
@@ -9,5 +10,13 @@ export class CreateDepartmentDto {
     @IsString()
     @IsNotEmpty()
     description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    @ApiHideProperty()
+    enabled?: boolean;
+
+
+
 
 }

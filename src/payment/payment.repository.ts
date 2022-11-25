@@ -354,7 +354,30 @@ export class PaymentRepository extends BaseAbstractRepository<Payment> {
         },
       },
     ];
-    
+
+    let mony = await this.paymentModel.aggregate(stages);
+    return mony[0] == undefined ? 0 : mony[0].totalExpensis
+  }
+
+  public async allExpensisMonyProduct(product: string) {
+    let stages = [
+      {
+        $match: {
+          product: ObjectId(product),
+          paymentType: PaymentType.EXPENSIS,
+        },
+      },
+
+
+      {
+        $group: {
+          _id: null,
+          totalExpensis: { $sum: '$paid' },
+        },
+      },
+    ];
+    console.log(stages)
+    console.log('inside mony product')
     let mony = await this.paymentModel.aggregate(stages);
     return mony[0] == undefined ? 0 : mony[0].totalExpensis
   }
@@ -375,7 +398,7 @@ export class PaymentRepository extends BaseAbstractRepository<Payment> {
         },
       },
     ];
-    
+    console.log(stages)
     let mony = await this.paymentModel.aggregate(stages);
     return mony[0] == undefined ? 0 : mony[0].totalExpensis
   }
@@ -384,7 +407,7 @@ export class PaymentRepository extends BaseAbstractRepository<Payment> {
     let stages = [
       {
         $match: {
-        
+
           paymentType: PaymentType.REVENUSE,
         },
       },
@@ -421,6 +444,27 @@ export class PaymentRepository extends BaseAbstractRepository<Payment> {
   }
 
 
+  public async allRevenueMonyProduct(product: string) {
+    let stages = [
+      {
+        $match: {
+          product: ObjectId(product),
+          paymentType: PaymentType.REVENUSE,
+        },
+      },
+
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$paid' },
+        },
+      },
+    ];
+    let mony = await this.paymentModel.aggregate(stages);
+    return mony[0] == undefined ? 0 : mony[0].totalRevenue
+  }
+
+
   public async findAllWithPaginationCustome(
     @AuthUser() me: UserDocument,
     queryFiltersAndOptions: any,
@@ -428,7 +472,8 @@ export class PaymentRepository extends BaseAbstractRepository<Payment> {
     console.log(queryFiltersAndOptions)
 
     let filters: FilterQuery<PaymentDocument> = _.pick(queryFiltersAndOptions, [
-      'task',
+      'department',
+      'product',
       'from',
       'to',
       'paymentType',
@@ -452,10 +497,12 @@ export class PaymentRepository extends BaseAbstractRepository<Payment> {
       //     ...(queryFiltersAndOptions.to && { $lte: moment(queryFiltersAndOptions.to).utc().endOf('d').toDate(), })
       //   }
       // }),
-      ...(queryFiltersAndOptions.task && { department: ObjectId(queryFiltersAndOptions.department) }),
+      ...(queryFiltersAndOptions.department && { department: ObjectId(queryFiltersAndOptions.department) }),
+      ...(queryFiltersAndOptions.product && { product: ObjectId(queryFiltersAndOptions.product) }),
       ...(queryFiltersAndOptions.paymentType && { paymentType: queryFiltersAndOptions.paymentType }),
     }
-    delete filters.task
+    delete filters.department
+    delete filters.product
     delete filters.paymentType
     delete filters.isDeletedPayment
     delete filters.from

@@ -13,6 +13,10 @@ export class FilterQueryDepartment {
         return new RegExp(escapeRegExp(obj.name), 'i');
     })
     name?: string;
+
+    @IsOptional()
+    @IsBoolean()
+    enabled?: boolean
 }
 export class FilterQueryOptionsDepartment extends IntersectionType(
     FilterQueryDepartment,

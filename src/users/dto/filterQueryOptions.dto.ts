@@ -1,8 +1,9 @@
-import { IsMongoId, IsOptional } from 'class-validator';
+import { IsEnum, IsMongoId, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { escapeRegExp } from 'lodash';
 import { PaginationParams } from 'src/utils/pagination/paginationParams.dto';
 import { IntersectionType } from '@nestjs/swagger';
+import { UserRole } from '../models/_user.model';
 
 export class FilterQueryUser {
   @IsOptional()
@@ -10,12 +11,16 @@ export class FilterQueryUser {
     return new RegExp(escapeRegExp(obj.username), 'i');
   })
   username?: string;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole
 }
 
 export class FilterQueryOptionsUser extends IntersectionType(
   FilterQueryUser,
   PaginationParams,
-) {}
+) { }
 
 /* export class FilterQueryNotification {
   @IsMongoId()
